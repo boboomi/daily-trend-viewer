@@ -145,16 +145,16 @@
 </header>
 
 <nav class="tabs" id="tabs">
-  <button class="tab active" data-tab="youtube">▶ 유튜브</button>
+  <button class="tab" data-tab="youtube">▶ 유튜브</button>
   <button class="tab" data-tab="shorts">⚡ 쇼츠</button>
   <button class="tab" data-tab="ai">🤖 AI 영상</button>
-  <button class="tab" data-tab="reels">📸 릴스</button>
+  <button class="tab active" data-tab="reels">📸 릴스</button>
   <button class="tab" data-tab="x">𝕏 트위터</button>
   <button class="tab" data-tab="threads">🧵 스레드</button>
   <button class="tab" data-tab="tiktok">🎵 틱톡</button>
 </nav>
 
-<div class="toolbar" id="toolbar">
+<div class="toolbar" id="toolbar" style="display:none">
   <div class="chips" id="chips"></div>
   <div class="periods" id="periods">
     <button class="period" data-period="day">오늘</button>
@@ -168,7 +168,7 @@
 </div>
 
 <main>
-  <div id="videoView">
+  <div id="videoView" style="display:none">
     <div class="status" id="status">불러오는 중...</div>
     <div class="grid" id="grid"></div>
   </div>
@@ -190,7 +190,7 @@
     <div class="status" id="aiStatus" style="display:none"></div>
   </div>
 
-  <div id="reelsView" class="ext-section" style="display:none">
+  <div id="reelsView" class="ext-section">
     <p class="note">여행·재테크 계정의 인스타 릴스입니다. 카드를 누르면 인스타에서 재생합니다. 수집이 제한되면 마지막으로 확인한 목록을 유지하며, 확인하지 못한 통계는 표시하지 않습니다. 계정 이름을 누르면 해당 계정의 릴스 전체를 볼 수 있어요.</p>
     <h2 style="font-size:16px;margin-bottom:10px">👤 구독 계정</h2>
     <div id="reelsTopics" role="group" aria-label="릴스 주제" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
@@ -285,7 +285,7 @@
 </div>
 
 <script>
-const state = { tab: 'youtube', category: '전체', period: 'week', categories: ['전체'], search: '' };
+const state = { tab: 'reels', category: '전체', period: 'week', categories: ['전체'], search: '' };
 
 const fmt = n => {
   if (n >= 1e8) return (n / 1e8).toFixed(1).replace(/\.0$/, '') + '억회';
@@ -921,7 +921,9 @@ document.getElementById('refreshBtn').onclick = () => {
   else loadVideos(true);
 };
 
-initCategories().then(() => loadVideos());
+// 첫 화면은 릴스. 유튜브 카테고리 조회가 실패해도 릴스는 독립적으로 연다.
+initCategories().catch(() => {});
+document.querySelector('.tab[data-tab="reels"]').click();
 </script>
 </body>
 </html>
