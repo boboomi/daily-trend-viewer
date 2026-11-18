@@ -191,7 +191,7 @@
   </div>
 
   <div id="reelsView" class="ext-section" style="display:none">
-    <p class="note">인스타그램 미러(imginn)를 통해 등록된 계정들의 최신 릴스를 좋아요·댓글 수와 함께 가져옵니다(인스타그램이 무인증 조회를 막아 미러를 사용하며, 조회수는 제공되지 않습니다). 아래에서 즐겨보는 크리에이터 계정을 자유롭게 추가·삭제하세요.</p>
+    <p class="note">여행·재테크 계정의 인스타 릴스입니다. 카드를 누르면 인스타에서 재생합니다. 수집이 제한되면 마지막으로 확인한 목록을 유지하며, 확인하지 못한 통계는 표시하지 않습니다. 계정 이름을 누르면 해당 계정의 릴스 전체를 볼 수 있어요.</p>
     <h2 style="font-size:16px;margin-bottom:10px">👤 구독 계정</h2>
     <div class="acc-chips" id="accChips"></div>
     <div class="addbar">
@@ -458,7 +458,7 @@ function timeAgo(ts) {
 
 /* ---------- 인스타 릴스 탭 ---------- */
 let reelsData = [];
-const reelsState = { sort: 'likes' };  // likes | comments | views (미러 소스라 조회수는 없음)
+const reelsState = { sort: 'views' };  // 공개 화면에서 확인한 통계만 표시
 async function loadReels(force = false) {
   const status = document.getElementById('reelsStatus');
   const grid = document.getElementById('reelsGrid');
@@ -469,7 +469,7 @@ async function loadReels(force = false) {
     const data = await (await fetch('/api/reels' + (force ? '?force=1' : ''))).json();
     renderAccountChips(data.accounts);
     document.getElementById('updated').textContent =
-      '업데이트: ' + new Date(data.fetchedAt * 1000).toLocaleTimeString('ko-KR');
+      '릴스 자료 확인: ' + new Date(data.fetchedAt * 1000).toLocaleString('ko-KR');
     reelsData = data.reels || [];
     if (!reelsData.length) {
       document.getElementById('reelsCount').textContent = '';
@@ -500,17 +500,21 @@ function renderReels() {
         <div class="title"></div>
         <div class="sub">
           ${r.views ? `<span class="${f === 'views' ? 'views' : ''}">👁️ ${fmt2(r.views)}</span>` : ''}
-          <span class="${f === 'likes' ? 'views' : ''}">❤️ ${fmt2(r.likes || 0)}</span>
-          <span class="${f === 'comments' ? 'views' : ''}">💬 ${fmt2(r.comments || 0)}</span>
+          ${r.likes != null ? `<span class="${f === 'likes' ? 'views' : ''}">❤️ ${fmt2(r.likes)}</span>` : ''}
+          ${r.comments != null ? `<span class="${f === 'comments' ? 'views' : ''}">💬 ${fmt2(r.comments)}</span>` : ''}
         </div>
         <div class="sub" style="margin-top:3px"><span>@${r.account}</span></div>
       </div>`;
-    el.querySelector('.title').textContent = r.title;
+    el.querySelector('.title').textContent = r.title || `@${r.account} 인스타 릴스`;
+    el.querySelector('.thumb').onerror = function () {
+      this.alt = `@${r.account} · 썸네일 만료, 눌러서 인스타에서 보기`;
+      this.style.objectFit = 'contain';
+    };
     el.onclick = () => window.open(r.url, '_blank');
     grid.appendChild(el);
   });
   document.getElementById('reelsCount').textContent =
-    `${label[f]} 기준 · 총 ${sorted.length}개`;
+    `${label[f]} 기준 · 총 ${sorted.length}개 · 클릭하면 인스타에서 재생 · 수집 실패 시 마지막 확인 자료 표시`;
 }
 function renderAccountChips(accounts) {
   const box = document.getElementById('accChips');
@@ -518,7 +522,8 @@ function renderAccountChips(accounts) {
   accounts.forEach(name => {
     const chip = document.createElement('span');
     chip.className = 'acc-chip';
-    chip.innerHTML = `@<b></b><button title="삭제">✕</button>`;
+    chip.innerHTML = `<a target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none">@<b></b></a><button title="삭제">✕</button>`;
+    chip.querySelector('a').href = `https://www.instagram.com/${encodeURIComponent(name)}/reels/`;
     chip.querySelector('b').textContent = name;
     chip.querySelector('button').onclick = () => updateAccount('remove', name);
     box.appendChild(chip);

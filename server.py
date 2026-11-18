@@ -364,6 +364,17 @@ def get_reels(force: bool):
         merged.sort(key=lambda r: (r["views"], r["likes"]), reverse=True)
         return merged
     reels, fetched_at = cached(("reels", tuple(accounts)), force, fetch)
+    if not reels:
+        # 수집 실패를 빈 결과로 덮지 않는다. 공개 화면에서 확인한 마지막 자료.
+        try:
+            with open(os.path.join(BASE_DIR, "seed", "reels.json"), encoding="utf-8") as f:
+                snapshot = json.load(f)
+            reels = [r for r in snapshot.get("reels", [])
+                     if r.get("account", "").lower() in accounts]
+            if reels:
+                fetched_at = snapshot.get("fetchedAt", 0)
+        except (OSError, ValueError, TypeError):
+            pass
     return reels, accounts, fetched_at
 
 
@@ -803,7 +814,7 @@ class Handler(BaseHTTPRequestHandler):
 
         if parsed.path == "/api/reels":
             reels, accounts, fetched_at = get_reels(force)
-            self._send(200, {"reels": reels[:80], "accounts": accounts, "fetchedAt": fetched_at})
+            self._send(200, {"reels": reels[:120], "accounts": accounts, "fetchedAt": fetched_at})
             return
 
         if parsed.path == "/api/x":

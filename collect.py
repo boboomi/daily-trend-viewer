@@ -147,7 +147,7 @@ def main():
     collect_videos()
 
     reels, accounts, fetched = server.get_reels(False)
-    reels = reels[:80]
+    reels = reels[:120]
     n = download_images(reels, "thumbnail")
     data = carry_forward("reels.json", "reels",
                          {"reels": reels, "accounts": accounts, "fetchedAt": fetched})

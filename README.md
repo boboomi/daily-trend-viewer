@@ -7,7 +7,7 @@ API 키 없이 동작하며, 외부 패키지 설치도 필요 없습니다(파�
 
 **https://boboomi.github.io/daily-trend-viewer/**
 
-GitHub Actions가 매일 오전 7시(KST)에 데이터를 수집해 GitHub Pages로 배포하는 스냅샷 버전입니다. 오늘 2026-11-18은 오후 3시(KST)에도 수집합니다. GitHub 예약은 지연될 수 있으며 정각 완료를 보장하지 않습니다.
+GitHub Actions가 매일 오전 7시(KST)에 데이터를 수집해 GitHub Pages로 배포하는 스냅샷 버전입니다. 사용자 요청으로 오늘 오후 3시 예약은 취소하고 즉시 수동 갱신합니다. GitHub 예약은 지연될 수 있으며 정각 완료를 보장하지 않습니다.
 - 구성: `collect.py`(수집·정적 사이트 생성) + `static_shim.js`(API 호출을 JSON 파일로 변환) + `.github/workflows/pages.yml`(매일 실행)
 - 실시간 기능(검색, 새로고침, 계정 추가/삭제, 좋아요순 정렬)은 웹 버전에서 비활성화됩니다
 - 인스타그램 등 일부 소스는 GitHub 서버 IP를 차단해 웹 버전에서 비어 있을 수 있습니다 — 전체 데이터는 아래 로컬 실행 버전을 사용하세요
