@@ -20,7 +20,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse, parse_qs, quote
 
-PORT = 8778
+PORT = int(os.environ.get("TREND_PORT", "8778"))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CACHE_TTL = 3600  # 1시간 캐시 (새로고침 버튼으로 강제 갱신 가능)
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
@@ -63,6 +63,8 @@ ACCOUNTS_FILE = os.path.join(BASE_DIR, "reels_accounts.json")
 DEFAULT_IG_ACCOUNTS = [
     "go_with_iru", "cat_veling", "travelmeow_", "hello_summer81",
     "ching_a_travel", "bbaekkom_travel", "gwiyeon_choe", "_gonoz",
+    "moda.note", "zister.on", "parkkik0", "dacong.log", "kim.chiik",
+    "goorm.official", "ku_bbang", "seizethe_____fig.boss", "rich.byeol", "nungle",
 ]
 
 # ---------------------------------------------------------------- X (트위터)
@@ -796,7 +798,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         if parsed.path == "/api/categories":
-            self._send(200, {"categories": ["전체", "AI"] + list(CATEGORIES.keys())})
+            self._send(200, {"categories": ["전체"] + list(CATEGORIES.keys())})
             return
 
         if parsed.path == "/api/reels":

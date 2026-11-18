@@ -2,7 +2,7 @@
 """GitHub Pages용 정적 스냅샷 빌더.
 server.py의 수집 함수를 재사용해 모든 탭 데이터를 JSON으로 저장하고,
 핫링크가 막힌 썸네일(인스타/틱톡/트위터 CDN)은 내려받아 로컬 파일로 바꿉니다.
-GitHub Actions가 1시간마다 실행해 결과를 GitHub Pages로 배포합니다.
+GitHub Actions가 매일 한국 시간 오전 7시에 수집·배포합니다.
 사용: python3 collect.py [출력폴더=_site]
 """
 import hashlib
@@ -24,7 +24,7 @@ PAGES_BASE = os.environ.get("PAGES_BASE", "https://boboomi.github.io/daily-trend
 
 # static_shim.js의 SLUG와 반드시 일치해야 합니다 (파일명에 쓸 영문 슬러그)
 CATEGORY_SLUGS = {
-    "전체": "all", "AI": "ai", "국내여행": "domestic", "해외여행": "overseas",
+    "전체": "all", "국내여행": "domestic", "해외여행": "overseas",
     "아이랑 국내여행": "kids-domestic", "아이랑 해외여행": "kids-overseas", "재테크": "money",
 }
 
@@ -137,13 +137,13 @@ def build_site():
 
 
 def main():
-    assert set(CATEGORY_SLUGS) == {"전체", "AI", *server.CATEGORIES}, \
+    assert set(CATEGORY_SLUGS) == {"전체", *server.CATEGORIES}, \
         "server.py 카테고리가 바뀌었습니다. CATEGORY_SLUGS를 갱신하세요."
     t0 = time.time()
     os.makedirs(os.path.join(OUT, "data"), exist_ok=True)
     os.makedirs(os.path.join(OUT, "img"), exist_ok=True)
 
-    write_json("categories.json", {"categories": ["전체", "AI"] + list(server.CATEGORIES)})
+    write_json("categories.json", {"categories": ["전체"] + list(server.CATEGORIES)})
     collect_videos()
 
     reels, accounts, fetched = server.get_reels(False)
@@ -151,6 +151,9 @@ def main():
     n = download_images(reels, "thumbnail")
     data = carry_forward("reels.json", "reels",
                          {"reels": reels, "accounts": accounts, "fetchedAt": fetched})
+    # 이전 스냅샷의 기본/삭제 계정이 다시 등장하지 않도록 현재 구독만 유지.
+    data["accounts"] = accounts
+    data["reels"] = [r for r in data["reels"] if r.get("account", "").lower() in accounts]
     write_json("reels.json", data)
     print("릴스: %d개 (썸네일 %d개)" % (len(data["reels"]), n))
 
