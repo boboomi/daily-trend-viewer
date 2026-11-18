@@ -34,20 +34,17 @@ _img_lock = threading.Lock()
 IMG_CACHE_MAX = 600
 
 # ---------------------------------------------------------------- 유튜브
-# 카테고리 → 유튜브 검색어 매핑
+# 카테고리 → 유튜브 검색어들 (검색어마다 따로 찾아 합친 뒤 조회수순 정렬)
 CATEGORIES = {
-    "먹방": "먹방",
-    "뷰티/패션": "뷰티 메이크업 패션",
-    "브이로그": "브이로그",
-    "예능/코미디": "예능 웃긴 영상",
-    "영화/드라마": "영화 드라마 리뷰",
-    "테크/IT": "테크 리뷰",
-    "지식/교육": "지식 교양",
-    "여행": "여행",
-    "동물": "강아지 고양이",
+    "국내여행": ["국내여행", "국내 여행지 추천", "국내여행 브이로그", "제주도 여행", "부산 여행"],
+    "해외여행": ["해외여행", "일본 여행", "해외여행 브이로그", "동남아 여행", "유럽 여행"],
+    "아이랑 국내여행": ["아이랑 국내여행", "아이와 가볼만한곳", "키즈 풀빌라", "아이랑 제주도"],
+    "아이랑 해외여행": ["아이랑 해외여행", "아이와 일본여행", "가족 해외여행", "아이랑 다낭", "아이랑 괌"],
+    "재테크": ["재테크", "월급 재테크", "ETF 투자", "주식 초보", "짠테크"],
 }
-# "전체" 탭은 아래 카테고리들을 합쳐 조회수순으로 재정렬
-ALL_MERGE = ["먹방", "브이로그", "예능/코미디", "뷰티/패션", "영화/드라마", "여행"]
+# "전체" 탭은 카테고리마다 앞의 검색어 2개씩 합쳐 조회수순으로 재정렬
+ALL_MERGE = list(CATEGORIES)
+ALL_PER_CATEGORY = 2
 
 # 검색 필터 protobuf: 업로드 날짜 (2=오늘, 3=이번 주, 4=이번 달)
 PERIOD_CODE = {"day": 2, "week": 3, "month": 4}
@@ -64,8 +61,8 @@ PERIOD_EXCLUDE = {
 IG_APP_ID = "936619743392459"  # instagram.com 웹이 쓰는 공개 앱 ID
 ACCOUNTS_FILE = os.path.join(BASE_DIR, "reels_accounts.json")
 DEFAULT_IG_ACCOUNTS = [
-    "openai", "runwayapp", "pika_labs", "lumalabsai", "midjourney",
-    "klingai_official", "heygen_official", "higgsfield.ai", "googledeepmind",
+    "go_with_iru", "cat_veling", "travelmeow_", "hello_summer81",
+    "ching_a_travel", "bbaekkom_travel", "gwiyeon_choe", "_gonoz",
 ]
 
 # ---------------------------------------------------------------- X (트위터)
@@ -260,11 +257,11 @@ def get_videos(category: str, period: str, shorts: bool, force: bool, enrich: bo
         if query:
             queries = [query]
         elif category == "전체":
-            queries = [CATEGORIES[c] for c in ALL_MERGE]
+            queries = [q for c in ALL_MERGE for q in CATEGORIES[c][:ALL_PER_CATEGORY]]
         elif category == "AI":
             queries = AI_YT_QUERIES
         else:
-            queries = [CATEGORIES.get(category, category)]
+            queries = CATEGORIES.get(category, [category])
         vids = merge_yt_searches(queries, period, shorts)
         if enrich:
             enrich_likes(vids)
